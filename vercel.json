@@ -1,0 +1,25 @@
+// vercel.json
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "/api/main.py",      // Path to your FastAPI app file
+      "use": "@vercel/python",    // Use the Vercel Python builder
+      "config": { "maxLambdaSize": "15mb" } // Default is fine for this approach
+    },
+    {
+      "src": "/public/**",        // Path to your static frontend files
+      "use": "@vercel/static"     // Use the static file builder
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",         // Route API requests starting with /api/
+      "dest": "/api/main.py"      // Forward them to your Python backend
+    },
+    {
+      "src": "/(.*)",             // Route all other requests (e.g., /, /style.css)
+      "dest": "/public/$1"        // Serve them from your public folder
+    }
+  ]
+}
