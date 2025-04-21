@@ -1,0 +1,29 @@
+/* style.css */
+body {
+    font-family: sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items": center;
+}
+.controls {
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+.controls label {
+    display: inline-block;
+    width: 150px; /* Adjust as needed */
+    margin-bottom: 5px;
+}
+.controls input[type=number] {
+    width: 60px; /* Adjust as needed */
+}
+#cy {
+    width: 90%;
+    max-width: 800px; /* Adjust as needed */
+    height: 600px;    /* Adjust as needed */
+    border: 1px solid #ccc;
+    display: block;
+    margin: auto;
+}
