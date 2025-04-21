@@ -33,7 +33,7 @@ app = FastAPI()
 NODE_PARENTS = {
     "A1": [], "A2": [], "A3": [], "A4": [], "A5": [], "UI": [], "H": [],
     "IS1": ["A1", "A2", "A3", "A5", "UI", "H", "IS3", "IS5"],
-@@ -33,14 +40,14 @@
+
     "O2": ["IS1"],
     "O3": ["IS3", "IS5"]
 }
@@ -50,7 +50,8 @@ class ContinuousUserInput(BaseModel):
     A1: float
     A2: float
     A3: float
-@@ -49,126 +56,175 @@ class ContinuousUserInput(BaseModel):
+
+class ContinuousUserInput(BaseModel):
     UI: float
     H: float
 
