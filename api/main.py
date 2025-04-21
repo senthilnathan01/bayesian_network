@@ -1,6 +1,28 @@
 # --- api/main.py (Single Call OpenAI GPT-4o Approach) ---
+import sys
+print("--- DEBUG: main.py TOP LEVEL EXECUTION ---", flush=True)
+# Print Python version and path just in case
+print(f"--- DEBUG: Python Version: {sys.version} ---", flush=True)
+print(f"--- DEBUG: Python Path: {sys.path} ---", flush=True)
 
-from fastapi import FastAPI, HTTPException
+try:
+    from fastapi import FastAPI
+    print("--- DEBUG: Imported FastAPI ---", flush=True)
+    app = FastAPI()
+    print("--- DEBUG: FastAPI app created ---", flush=True)
+
+    @app.get("/api/ping")
+    def ping():
+        print("--- DEBUG: /api/ping called ---", flush=True)
+        return {"message": "pong"}
+
+    print("--- DEBUG: Defined /api/ping ---", flush=True)
+
+except Exception as e:
+    print(f"--- DEBUG: ERROR during setup: {e} ---", flush=True)
+    # Optionally re-raise or handle differently
+    raise e
+    
 from pydantic import BaseModel
 import os
 import openai # Import the OpenAI library
