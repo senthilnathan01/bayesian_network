@@ -10,6 +10,9 @@ from typing import Dict, Any
 import json # For parsing JSON output from LLM
 import time # Optional: for potential retries
 
+print("DEBUG: Starting main.py execution...")
+logging.info("DEBUG: Logging configured.") # Use logger too
+
 # Load environment variables (for API keys)
 # Looks for a .env file in the root directory where you run uvicorn
 load_dotenv()
@@ -17,6 +20,9 @@ load_dotenv()
 # --- IMPORTANT: Set your OpenAI API Key as an environment variable ---
 # Name it OPENAI_API_KEY (e.g., in .env file or Vercel settings)
 openai.api_key = os.getenv("OPENAI_API_KEY")
+
+print(f"DEBUG: OpenAI Key loaded: {'Yes' if openai.api_key else 'NO - MISSING!'}") # Check if key loads
+
 if not openai.api_key:
     print("Warning: OPENAI_API_KEY environment variable not found.")
     # Decide if you want the app to fail here or proceed (it will fail on API call)
@@ -183,6 +189,7 @@ def call_openai_for_full_bn(input_states: Dict[str, float]) -> Dict[str, float]:
 # --- API Endpoint using the single-call function ---
 @app.post("/predict_openai_bn_single_call")
 async def predict_openai_bn_single_call(data: ContinuousUserInput):
+    print("DEBUG: Entered /predict_openai_bn_single_call function.") # Check if route handler is entered
     """
     Receives input probabilities and returns all node probabilities
     estimated by a single call to the OpenAI LLM.
@@ -223,8 +230,13 @@ async def predict_openai_bn_single_call(data: ContinuousUserInput):
         logger.error(f"Error in single call endpoint logic: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Internal server error during single call prediction: {e}")
 
+print("DEBUG: /predict_openai_bn_single_call route defined.")
+
 # --- Root endpoint ---
 @app.get("/")
 def root():
     """ Basic endpoint to check if the API is running. """
+    print("DEBUG: Entered / route.")
     return {"message": "OpenAI-Powered Bayesian Network API (Single Call) is running."}
+
+print("DEBUG: Finished defining routes.")
