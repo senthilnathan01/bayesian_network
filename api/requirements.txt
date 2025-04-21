@@ -1,0 +1,5 @@
+fastapi
+uvicorn[standard]
+# requests # Can remove if only using the openai library
+openai >= 1.0 # Use the newer version syntax
+python-dotenv # For managing API keys
