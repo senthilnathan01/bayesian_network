@@ -1,0 +1,20 @@
+# .gitignore
+
+# Python Virtual Environment
+venv/
+*.pyc
+__pycache__/
+.env
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.idea/
+.vscode/
+
+# Other
+*.log
+*.pot
+*.py[cod]
