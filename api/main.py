@@ -11,7 +11,7 @@ try:
     app = FastAPI()
     print("--- DEBUG: FastAPI app created ---", flush=True)
 
-    @app.get("/api/ping")
+    @app.get("/ping")
     def ping():
         print("--- DEBUG: /api/ping called ---", flush=True)
         return {"message": "pong"}
