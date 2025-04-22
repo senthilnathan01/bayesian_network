@@ -138,7 +138,7 @@ async function fetchAndUpdateLLM() {
 
     try {
         // Fetch from the single-call endpoint defined in api/main.py
-        const response = await fetch('/api/predict_openai_bn_single_call', { // Make sure '/api/' prefix is there
+        const response = await fetch('api/predict_openai_bn_single_call', { // Make sure '/api/' prefix is there
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(inputData)
