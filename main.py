@@ -1,4 +1,28 @@
-from fastapi import FastAPI, HTTPException
+# --- api/main.py (Single Call OpenAI GPT-4o Approach) ---
+import sys
+print("--- DEBUG: main.py TOP LEVEL EXECUTION ---", flush=True)
+# Print Python version and path just in case
+print(f"--- DEBUG: Python Version: {sys.version} ---", flush=True)
+print(f"--- DEBUG: Python Path: {sys.path} ---", flush=True)
+
+try:
+    from fastapi import FastAPI
+    print("--- DEBUG: Imported FastAPI ---", flush=True)
+    app = FastAPI()
+    print("--- DEBUG: FastAPI app created ---", flush=True)
+
+    @app.get("/api/ping")
+    def ping():
+        print("--- DEBUG: /api/ping called ---", flush=True)
+        return {"message": "pong"}
+
+    print("--- DEBUG: Defined /api/ping ---", flush=True)
+
+except Exception as e:
+    print(f"--- DEBUG: ERROR during setup: {e} ---", flush=True)
+    # Optionally re-raise or handle differently
+    raise e
+
 from pydantic import BaseModel
 import os
 import openai # Import the OpenAI library
@@ -8,6 +32,8 @@ from typing import Dict, Any
 import json # For parsing JSON output from LLM
 import time # Optional: for potential retries
 
+print("DEBUG: Starting main.py execution...")
+logging.info("DEBUG: Logging configured.") # Use logger too
 
 # Load environment variables (for API keys)
 # Looks for a .env file in the root directory where you run uvicorn
@@ -16,6 +42,9 @@ load_dotenv()
 # --- IMPORTANT: Set your OpenAI API Key as an environment variable ---
 # Name it OPENAI_API_KEY (e.g., in .env file or Vercel settings)
 openai.api_key = os.getenv("OPENAI_API_KEY")
+
+print(f"DEBUG: OpenAI Key loaded: {'Yes' if openai.api_key else 'NO - MISSING!'}") # Check if key loads
+
 if not openai.api_key:
     print("Warning: OPENAI_API_KEY environment variable not found.")
     # Decide if you want the app to fail here or proceed (it will fail on API call)
@@ -24,22 +53,22 @@ if not openai.api_key:
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI()
-
 # Define your BN structure (nodes and parent dependencies)
 # Used for describing the structure in the prompt
 NODE_PARENTS = {
     "A1": [], "A2": [], "A3": [], "A4": [], "A5": [], "UI": [], "H": [],
     "IS1": ["A1", "A2", "A3", "A5", "UI", "H", "IS3", "IS5"],
-
+    "IS2": ["A2", "A5", "UI"],
+    "IS3": ["A1", "A2", "UI", "H", "IS2"],
+    "IS4": ["A3", "A4", "H"],
+    "IS5": ["A1", "A3", "IS4"],
+    "O1": ["IS1", "IS3", "IS4", "IS5"],
     "O2": ["IS1"],
     "O3": ["IS3", "IS5"]
 }
 # All nodes in the network
 ALL_NODES = list(NODE_PARENTS.keys())
 # Nodes for which we want the LLM to estimate probabilities
-
-
 TARGET_NODES = ["IS1", "IS2", "IS3", "IS4", "IS5", "O1", "O2", "O3"]
 
 
@@ -48,8 +77,8 @@ class ContinuousUserInput(BaseModel):
     A1: float
     A2: float
     A3: float
-
-class ContinuousUserInput(BaseModel):
+    A4: float
+    A5: float
     UI: float
     H: float
 
@@ -130,7 +159,6 @@ def call_openai_for_full_bn(input_states: Dict[str, float]) -> Dict[str, float]:
             response_format={"type": "json_object"}, # Request JSON output format
             max_tokens=600,  # Adjust based on expected output size and complexity
             temperature=0.2, # Lower temperature for more deterministic estimation
-
             n=1
         )
         llm_output_raw = response.choices[0].message.content.strip()
@@ -138,10 +166,8 @@ def call_openai_for_full_bn(input_states: Dict[str, float]) -> Dict[str, float]:
 
         # --- Robust Parsing for JSON Output ---
         try:
-
             estimated_probs = json.loads(llm_output_raw)
             # Validate structure and values
-
             validated_probs = {}
             missing_nodes = []
             for node in TARGET_NODES:
@@ -159,10 +185,6 @@ def call_openai_for_full_bn(input_states: Dict[str, float]) -> Dict[str, float]:
                  # Optionally raise an error here if completeness is critical
 
             return validated_probs # Returns dict like {"IS1": 0.75, ...}
-
-
-
-
 
         except json.JSONDecodeError as json_err:
             logger.error(f"Failed to parse LLM output as JSON: {llm_output_raw}. Error: {json_err}")
@@ -185,8 +207,9 @@ def call_openai_for_full_bn(input_states: Dict[str, float]) -> Dict[str, float]:
 
 
 # --- API Endpoint using the single-call function ---
-@app.post("/predict_openai_bn_single_call")
+@app.post("/api/predict_openai_bn_single_call")
 async def predict_openai_bn_single_call(data: ContinuousUserInput):
+    print("DEBUG: Entered /api/predict_openai_bn_single_call function.", flush=True)
     """
     Receives input probabilities and returns all node probabilities
     estimated by a single call to the OpenAI LLM.
@@ -227,8 +250,13 @@ async def predict_openai_bn_single_call(data: ContinuousUserInput):
         logger.error(f"Error in single call endpoint logic: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Internal server error during single call prediction: {e}")
 
+print("DEBUG: /api/predict_openai_bn_single_call route defined.")
+
 # --- Root endpoint ---
 @app.get("/")
 def root():
     """ Basic endpoint to check if the API is running. """
+    print("DEBUG: Entered / route.", flush=True)
     return {"message": "OpenAI-Powered Bayesian Network API (Single Call) is running."}
+
+print("DEBUG: Finished defining routes.")
